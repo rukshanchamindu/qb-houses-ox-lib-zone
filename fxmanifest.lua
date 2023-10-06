@@ -9,16 +9,14 @@ ui_page 'html/index.html'
 shared_scripts {
     'config.lua',
     '@qb-core/shared/locale.lua',
+    '@ox_lib/init.lua',
     'locales/en.lua',
     'locales/*.lua'
 }
 
 client_scripts {
     'client/main.lua',
-    'client/decorate.lua',
-    '@PolyZone/client.lua',
-    '@PolyZone/BoxZone.lua',
-    '@PolyZone/CircleZone.lua',
+    'client/decorate.lua'
 }
 
 server_scripts {

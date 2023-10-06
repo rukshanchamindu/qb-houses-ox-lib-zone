@@ -154,23 +154,22 @@ local function RegisterStashTarget()
         return
     end
 
-    stashTargetBox = BoxZone:Create(vector3(stashLocation.x, stashLocation.y, stashLocation.z), 1.5, 1.5, {
-        name = stashTargetBoxID,
-        heading = 0.0,
-        minZ = stashLocation.z - 1.0,
-        maxZ = stashLocation.z + 1.0,
-        debugPoly = false
-    })
-
-    stashTargetBox:onPlayerInOut(function (isPointInside)
-        if isPointInside and not entering and isOwned then
-            exports['qb-core']:DrawText(Lang:t("target.open_stash"), 'left')
-        else
+    stashTargetBox = lib.zones.box({
+        coords = vector3(stashLocation.x, stashLocation.y, stashLocation.z),
+        size = vec3(1.5, 1.5, 2),
+        rotation = 0.0,
+        debug = false,
+        onEnter = function()
+            if not entering and isOwned then
+                exports['qb-core']:DrawText(Lang:t("target.open_stash"), 'left')
+                isInsideStashTarget = true
+            end
+        end,
+        onExit = function()
             exports['qb-core']:HideText()
+            isInsideStashTarget = false
         end
-
-        isInsideStashTarget = isPointInside
-    end)
+    })
 end
 
 local function RegisterOutfitsTarget()
@@ -178,23 +177,22 @@ local function RegisterOutfitsTarget()
         return
     end
 
-    outfitsTargetBox = BoxZone:Create(vector3(outfitLocation.x, outfitLocation.y, outfitLocation.z), 1.5, 1.5, {
-        name = outfitsTargetBoxID,
-        heading = 0.0,
-        minZ = outfitLocation.z - 1.0,
-        maxZ = outfitLocation.z + 1.0,
-        debugPoly = false
-    })
-
-    outfitsTargetBox:onPlayerInOut(function (isPointInside)
-        if isPointInside and not entering and isOwned then
-            exports['qb-core']:DrawText(Lang:t("target.outfits"), 'left')
-        else
+    outfitsTargetBox = lib.zones.box({
+        coords = vector3(outfitLocation.x, outfitLocation.y, outfitLocation.z),
+        size = vec3(1.5, 1.5, 2),
+        rotation = 0.0,
+        debug = false,
+        onEnter = function()
+            if not entering and isOwned then
+                exports['qb-core']:DrawText(Lang:t("target.outfits"), 'left')
+                isInsideOutfitsTarget = true
+            end
+        end,
+        onExit = function()
             exports['qb-core']:HideText()
+            isInsideOutfitsTarget = false
         end
-
-        isInsideOutfitsTarget = isPointInside
-    end)
+    })
 end
 
 local function RegisterCharactersTarget()
@@ -202,23 +200,20 @@ local function RegisterCharactersTarget()
         return
     end
 
-    charactersTargetBox = BoxZone:Create(vector3(logoutLocation.x, logoutLocation.y, logoutLocation.z), 1.5, 1.5, {
-        name = charactersTargetBoxID,
-        heading = 0.0,
-        minZ = logoutLocation.z - 1.0,
-        maxZ = logoutLocation.z + 1.0,
-        debugPoly = false
-    })
-
-    charactersTargetBox:onPlayerInOut(function (isPointInside)
-        if isPointInside and not entering and isOwned then
+    charactersTargetBox = lib.zones.box({
+        coords = vector3(logoutLocation.x, logoutLocation.y, logoutLocation.z),
+        size = vec3(1.5, 1.5, 2),
+        rotation = 0.0,
+        debug = false,
+        onEnter = function()
             exports['qb-core']:DrawText(Lang:t("target.change_character"), 'left')
-        else
+            isInsiteCharactersTarget = true
+        end,
+        onExit = function()
             exports['qb-core']:HideText()
+            isInsiteCharactersTarget = false
         end
-
-        isInsiteCharactersTarget = isPointInside
-    end)
+    })
 end
 
 local function RegisterHouseExitZone(id)
@@ -239,21 +234,14 @@ local function RegisterHouseExitZone(id)
     local house = Config.Houses[id]
     local coords = vector3(house.coords['enter'].x + POIOffsets.exit.x, house.coords['enter'].y + POIOffsets.exit.y, house.coords['enter'].z  - Config.MinZOffset + POIOffsets.exit.z + 1.0)
 
-    local zone = BoxZone:Create(coords, 2, 1, {
-        name = boxName,
-        heading = 0.0,
-        debugPoly = false,
-        minZ = coords.z - 2.0,
-        maxZ = coords.z + 1.0,
+    local zone = lib.zones.box({
+        coords = coords,
+        size = vec3(1, 2, 2),
+        rotation = 0.0,
+        debug = false,
+        onEnter = showExitHeaderMenu,
+        onExit = CloseMenuFull
     })
-
-    zone:onPlayerInOut(function (isPointInside)
-        if isPointInside then
-            showExitHeaderMenu()
-        else
-            CloseMenuFull()
-        end
-    end)
 
     Config.Targets[boxName] = {created = true, zone = zone}
 end
@@ -267,21 +255,14 @@ local function RegisterHouseEntranceZone(id, house)
         return
     end
 
-    local zone = BoxZone:Create(coords, 2, 1, {
-        name = boxName,
-        heading = house.coords['enter'].h,
-        debugPoly = false,
-        minZ = house.coords['enter'].z - 1.0,
-        maxZ = house.coords['enter'].z + 1.0,
+    local zone = lib.zones.box({
+        coords = coords,
+        size = vec3(1, 2, 2),
+        rotation = house.coords['enter'].h,
+        debug = false,
+        onEnter = showEntranceHeaderMenu,
+        onExit = CloseMenuFull
     })
-
-    zone:onPlayerInOut(function (isPointInside)
-        if isPointInside then
-            showEntranceHeaderMenu()
-        else
-            CloseMenuFull()
-        end
-    end)
 
     Config.Targets[boxName] = {created = true, zone = zone}
 end
@@ -291,14 +272,14 @@ local function DeleteBoxTarget(box)
         return
     end
 
-    box:destroy()
+    box:remove()
 end
 
 local function DeleteHousesTargets()
     if Config.Targets and next(Config.Targets) then
         for id, target in pairs(Config.Targets) do
             if not string.find(id, "Exit") then
-                target.zone:destroy()
+                target.zone:remove()
                 Config.Targets[id] = nil
             end
         end
