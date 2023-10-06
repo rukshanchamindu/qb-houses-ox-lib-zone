@@ -232,11 +232,11 @@ local function RegisterHouseExitZone(id)
     end
 
     local house = Config.Houses[id]
-    local coords = vector3(house.coords['enter'].x + POIOffsets.exit.x, house.coords['enter'].y + POIOffsets.exit.y, house.coords['enter'].z  - Config.MinZOffset + POIOffsets.exit.z + 1.0)
+    local coords = vector3(house.coords['enter'].x + POIOffsets.exit.x, house.coords['enter'].y + POIOffsets.exit.y, house.coords['enter'].z  - Config.MinZOffset + POIOffsets.exit.z +0.5)
 
     local zone = lib.zones.box({
         coords = coords,
-        size = vec3(1, 2, 2),
+        size = vec3(1, 2, 3),
         rotation = 0.0,
         debug = false,
         onEnter = showExitHeaderMenu,
